@@ -8,6 +8,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from config import *
 from deap import base, creator, tools, algorithms
 from matplotlib.animation import FuncAnimation, PillowWriter
+from pathlib import Path
 
 from data_base import DataBase
 from teacher import Teacher
@@ -82,7 +83,7 @@ def main():
     return pareto_front, logbook
 
 
-# ВІЗУАЛІЗАЦІЯ
+# візуалізація
 def plot_pareto_3d(front):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
@@ -95,8 +96,8 @@ def plot_pareto_3d(front):
     plt.show()
 
 
-# ЗБЕРЕЖЕННЯ РЕЗУЛЬТАТУ
-def save_solution(individual, filename="schedule.xlsx", title_prefix=""):
+# збереження результату
+def save_solution(individual, filename):
     builder = TimetableBuilder(individual, db, slots_structure)
     builder.build()
     wb = openpyxl.Workbook()
@@ -161,7 +162,7 @@ def save_solution(individual, filename="schedule.xlsx", title_prefix=""):
     wb.save(filename)
     print(f"Saved styled schedule: {filename}")
 
-def plot_convergence(logbook, filename="convergence_plot.png"):
+def plot_convergence(logbook, filename):
     gen = logbook.select("gen")
     avg_history = logbook.select("avg")
     min_history = logbook.select("min")
@@ -269,21 +270,22 @@ def save_rotation_animation(front, filename="pareto_3d_rotation.gif"):
 
 if __name__ == "__main__":
     pareto_front, log = main()
+    Path(output_foldername).mkdir(parents=True, exist_ok=True)
 
     if len(log) > 0:
-        plot_convergence(log)
+        plot_convergence(log, output_foldername+"convergence.png")
 
     if len(pareto_front) > 0:
         plot_pareto_3d(pareto_front)
 
         try:
-            save_rotation_animation(pareto_front, "pareto_front.gif")
+            save_rotation_animation(pareto_front, output_foldername+"pareto_front.gif")
         except Exception as e:
             print(f"Animation failed: {e}")
         print("\n--- Saving Best Solutions ---")
         def save_pair(ind, name_suffix):
-            f_student = f"schedule_{name_suffix}.xlsx"
-            f_teacher = f"teachers_{name_suffix}.xlsx"
+            f_student = output_foldername+f"schedule_{name_suffix}.xlsx"
+            f_teacher = output_foldername+f"teachers_{name_suffix}.xlsx"
 
             save_solution(ind, f_student)
             save_teacher_solution(ind, f_teacher)

@@ -1,5 +1,6 @@
 hours_filename = "hours.xlsx"
 preferences_filename = "preferences.xlsx"
+output_foldername = "output/"
 
 top_left_cell_of_day_templates = "L1"
 lessons_available_per_day = 15
